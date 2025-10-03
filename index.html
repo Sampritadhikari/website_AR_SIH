@@ -1,0 +1,574 @@
+<!-- filepath: [login_for_AR.html](http://_vscodecontentref_/0) -->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>PathVisioN - AR Navigation</title>
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.css"
+      rel="stylesheet"
+    />
+    <style>
+      /* --- Login Styles --- */
+      .login-modal-bg {
+        position: fixed;
+        inset: 0;
+        z-index: 2000;
+        background: rgba(0, 0, 0, 0.06);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      .login-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 6px 24px rgba(2, 6, 23, 0.1);
+        padding: 32px 28px;
+        max-width: 340px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+      .login-card h1 {
+        margin: 0 0 8px 0;
+        font-size: 22px;
+        color: #0ea5a4;
+        text-align: center;
+      }
+      label {
+        font-size: 13px;
+        color: #6b7280;
+        margin-bottom: 4px;
+        display: block;
+      }
+      input[type="text"],
+      input[type="password"] {
+        width: 100%;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #e6eefc;
+        font-size: 15px;
+        margin-bottom: 10px;
+      }
+      .btn {
+        background: #0ea5a4;
+        color: #fff;
+        border: none;
+        padding: 10px 0;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 8px;
+      }
+      .error-msg {
+        color: #ef4444;
+        font-size: 13px;
+        text-align: center;
+        margin-bottom: 0;
+      }
+      .small {
+        font-size: 13px;
+        color: #6b7280;
+        text-align: center;
+      }
+
+      /* --- AR Frontend Styles --- */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      }
+      .header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1rem;
+        text-align: center;
+        position: relative;
+        z-index: 1000;
+      }
+      .header h1 {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+      .header p {
+        opacity: 0.9;
+      }
+      .container {
+        display: flex;
+        height: calc(100vh - 120px);
+      }
+      .sidebar {
+        width: 350px;
+        background: #f8f9fa;
+        border-right: 1px solid #e0e0e0;
+        padding: 1rem;
+        overflow-y: auto;
+      }
+      .search-section {
+        margin-bottom: 2rem;
+      }
+      .search-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e0e0e0;
+        border-radius: 8px;
+        font-size: 14px;
+        margin-bottom: 1rem;
+      }
+      .btn-primary {
+        background: #007bff;
+        color: white;
+      }
+      .btn-primary:hover {
+        background: #0056b3;
+      }
+      .btn-success {
+        background: #28a745;
+        color: white;
+      }
+      .btn-success:hover {
+        background: #1e7e34;
+      }
+      .btn-warning {
+        background: #ffc107;
+        color: black;
+      }
+      .btn-warning:hover {
+        background: #e0a800;
+      }
+      .poi-section h3 {
+        margin-bottom: 1rem;
+        color: #333;
+      }
+      .poi-item {
+        background: white;
+        padding: 12px;
+        margin-bottom: 8px;
+        border-radius: 8px;
+        border-left: 4px solid #007bff;
+        cursor: pointer;
+        transition: all 0.3s;
+      }
+      .poi-item:hover {
+        background: #f0f8ff;
+        transform: translateX(4px);
+      }
+      .map-container {
+        flex: 1;
+        position: relative;
+      }
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+      .ar-toggle {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 25px;
+        border: none;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      .ar-view {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #000;
+        display: none;
+        justify-content: center;
+        align-items: center;
+        color: white;
+        flex-direction: column;
+      }
+      .ar-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: rgba(0, 123, 255, 0.9);
+        padding: 20px 30px;
+        border-radius: 15px;
+        text-align: center;
+        font-size: 1.2rem;
+      }
+      .info-panel {
+        position: absolute;
+        bottom: 20px;
+        left: 20px;
+        background: rgba(255, 255, 255, 0.95);
+        padding: 15px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+        max-width: 300px;
+        z-index: 1000;
+      }
+      .status-bar {
+        background: #28a745;
+        color: white;
+        padding: 8px;
+        text-align: center;
+        font-size: 14px;
+      }
+      /* Google Map Modal Styles */
+      #googleMapModal {
+        display: none;
+        position: fixed;
+        z-index: 3000;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.35);
+        align-items: center;
+        justify-content: center;
+      }
+      #googleMapModal .modal-content {
+        background: #fff;
+        border-radius: 12px;
+        max-width: 90vw;
+        max-height: 90vh;
+        width: 600px;
+        height: 400px;
+        position: relative;
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.18);
+        display: flex;
+        flex-direction: column;
+      }
+      #googleMapModal .close-btn {
+        position: absolute;
+        top: 10px;
+        right: 16px;
+        background: #ef4444;
+        color: #fff;
+        border: none;
+        border-radius: 6px;
+        padding: 4px 12px;
+        cursor: pointer;
+        font-weight: bold;
+      }
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+        .sidebar {
+          width: 100%;
+          height: 200px;
+        }
+        #googleMapModal .modal-content {
+          width: 98vw;
+          height: 60vw;
+          min-height: 300px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Login Modal (hidden after login) -->
+    <div class="login-modal-bg" id="loginModal">
+      <form class="login-card" id="loginForm" autocomplete="off">
+        <h1>Login</h1>
+        <div id="errorMsg" class="error-msg" style="display: none"></div>
+        <label for="username">Username</label>
+        <input
+          id="username"
+          type="text"
+          placeholder="Enter username"
+          required
+          autocomplete="username"
+        />
+        <label for="password">Password</label>
+        <input
+          id="password"
+          type="password"
+          placeholder="Enter password"
+          required
+          autocomplete="current-password"
+        />
+        <button class="btn" type="submit">Login</button>
+        <div class="small">Demo: user <b>admin</b>, pass <b>admin123</b></div>
+      </form>
+    </div>
+
+    <!-- AR Navigation UI (hidden until login) -->
+    <div id="arApp" style="display: none">
+      <header class="header">
+        <h1>🗺️ PathVisioN</h1>
+        <p>AR Navigation for Large & Complex Spaces</p>
+      </header>
+      <div class="status-bar" id="statusBar">
+        Indoor accuracy enabled with Wi-Fi & Bluetooth beacons
+      </div>
+      <div class="container">
+        <aside class="sidebar">
+          <div class="search-section">
+            <h3>🔍 Search Location</h3>
+            <input
+              type="text"
+              class="search-input"
+              id="searchInput"
+              placeholder="Search campus, hospital, airport..."
+            />
+            <button class="btn btn-primary" onclick="searchLocation()">
+              Search
+            </button>
+            <button class="btn btn-success" onclick="getCurrentLocation()">
+              My Location
+            </button>
+          </div>
+          <div class="poi-section">
+            <h3>📍 Points of Interest</h3>
+            <div id="poiList">
+              <div class="poi-item" onclick="navigateTo('entrance')">
+                🚪 Main Entrance
+              </div>
+              <div class="poi-item" onclick="navigateTo('cafeteria')">
+                🍽️ Cafeteria
+              </div>
+              <div class="poi-item" onclick="navigateTo('restroom')">
+                🚻 Restroom
+              </div>
+              <div class="poi-item" onclick="navigateTo('info_desk')">
+                ℹ️ Information Desk
+              </div>
+              <div class="poi-item" onclick="navigateTo('parking')">
+                🅿️ Parking Area
+              </div>
+            </div>
+          </div>
+          <div style="margin-top: 2rem">
+            <button class="btn btn-warning" onclick="clearRoute()">
+              Clear Route
+            </button>
+            <!-- Google Map Button -->
+            <button
+              class="btn btn-primary"
+              onclick="openGoogleMapModal()"
+              style="margin-top: 1rem"
+            >
+              Open Google Map
+            </button>
+          </div>
+        </aside>
+        <main class="map-container">
+          <div id="map"></div>
+          <button class="ar-toggle" onclick="toggleAR()">AR View</button>
+          <div class="ar-view" id="arView">
+            <h2>📱 AR Camera View</h2>
+            <p style="opacity: 0.7; margin: 1rem 0">
+              [Camera feed would appear here]
+            </p>
+            <div class="ar-overlay">
+              <div>➡️ Turn right in 50m</div>
+              <div style="font-size: 0.9rem; margin-top: 8px">
+                Destination: Main Entrance
+              </div>
+            </div>
+            <button
+              class="btn btn-primary"
+              onclick="toggleAR()"
+              style="margin-top: 2rem"
+            >
+              Back to Map
+            </button>
+          </div>
+          <div class="info-panel" id="infoPanel">
+            <strong>Welcome to PathVisioN!</strong><br />
+            Click on the map or search for a location to start navigation. AR
+            overlays will guide you step-by-step.
+          </div>
+        </main>
+      </div>
+    </div>
+
+    <!-- Google Map Modal -->
+    <div id="googleMapModal">
+      <div class="modal-content">
+        <button class="close-btn" onclick="closeGoogleMapModal()">X</button>
+        <iframe
+          id="googleMapIframe"
+          width="100%"
+          height="100%"
+          style="border: 0; flex: 1"
+          loading="lazy"
+          allowfullscreen
+          referrerpolicy="no-referrer-when-downgrade"
+          src="https://www.google.com/maps/embed/v1/place?key=YOUR_GOOGLE_MAPS_API_KEY&q=Pune,Maharashtra"
+        >
+        </iframe>
+      </div>
+    </div>
+
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.15.0/mapbox-gl.js"></script>
+    <script src="https://api.mapbox.com/mapbox-gl-js/plugins/mapbox-gl-geocoder/v5.0.0/mapbox-gl-geocoder.min.js"></script>
+    <script>
+      // --- LOGIN LOGIC ---
+      document
+        .getElementById("loginForm")
+        .addEventListener("submit", function (e) {
+          e.preventDefault();
+          const user = document.getElementById("username").value.trim();
+          const pass = document.getElementById("password").value;
+          const errorMsg = document.getElementById("errorMsg");
+          if (user === "admin" && pass === "admin123") {
+            errorMsg.style.display = "none";
+            document.getElementById("loginModal").style.display = "none";
+            document.getElementById("arApp").style.display = "";
+            sessionStorage.setItem("ar_logged_in", "1");
+          } else {
+            errorMsg.textContent = "Invalid username or password.";
+            errorMsg.style.display = "block";
+          }
+        });
+      if (sessionStorage.getItem("ar_logged_in") === "1") {
+        document.getElementById("loginModal").style.display = "none";
+        document.getElementById("arApp").style.display = "";
+      }
+
+      // --- AR NAVIGATION LOGIC ---
+      function initARApp() {
+        mapboxgl.accessToken =
+          "pk.eyJ1IjoidGVzdHVzZXIiLCJhIjoiY2tjZjdqd3l0MHk2dDJ5bW9kOXNyaWd5YiJ9.example"; // Replace with your token
+        const map = new mapboxgl.Map({
+          container: "map",
+          style: "mapbox://styles/mapbox/streets-v12",
+          center: [73.8567, 18.5204],
+          zoom: 15,
+        });
+        map.addControl(new mapboxgl.NavigationControl());
+        const geocoder = new MapboxGeocoder({
+          accessToken: mapboxgl.accessToken,
+          mapboxgl: mapboxgl,
+          placeholder: "Search for places...",
+        });
+        map.addControl(geocoder);
+        let currentMarker;
+        let routeLayer;
+        const pois = {
+          entrance: [73.8567, 18.5204],
+          cafeteria: [73.8575, 18.521],
+          restroom: [73.856, 18.52],
+          info_desk: [73.857, 18.5208],
+          parking: [73.855, 18.5195],
+        };
+        map.on("click", (e) => {
+          addMarker(e.lngLat);
+          updateInfoPanel(
+            `Location selected: ${e.lngLat.lng.toFixed(
+              5
+            )}, ${e.lngLat.lat.toFixed(5)}`
+          );
+        });
+        function addMarker(lngLat) {
+          if (currentMarker) currentMarker.remove();
+          currentMarker = new mapboxgl.Marker().setLngLat(lngLat).addTo(map);
+        }
+        window.searchLocation = function () {
+          const query = document.getElementById("searchInput").value;
+          if (query) {
+            updateInfoPanel(`Searching for: ${query}...`);
+            geocoder.query(query);
+          }
+        };
+        window.getCurrentLocation = function () {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+              const coords = [
+                position.coords.longitude,
+                position.coords.latitude,
+              ];
+              map.flyTo({ center: coords, zoom: 16 });
+              addMarker(coords);
+              updateInfoPanel("Current location found!");
+            });
+          }
+        };
+        window.navigateTo = function (poiKey) {
+          const coords = pois[poiKey];
+          map.flyTo({ center: coords, zoom: 17 });
+          addMarker(coords);
+          updateInfoPanel(
+            `Navigating to: ${poiKey.replace("_", " ").toUpperCase()}`
+          );
+          updateStatusBar("Calculating optimal route...");
+          setTimeout(() => {
+            updateStatusBar("Route calculated - AR guidance active");
+          }, 2000);
+        };
+        window.clearRoute = function () {
+          if (currentMarker) currentMarker.remove();
+          if (routeLayer) map.removeLayer("route");
+          updateInfoPanel("Route cleared. Select a new destination.");
+          updateStatusBar(
+            "Indoor accuracy enabled with Wi-Fi & Bluetooth beacons"
+          );
+        };
+        window.toggleAR = function () {
+          const arView = document.getElementById("arView");
+          const isVisible = arView.style.display === "flex";
+          arView.style.display = isVisible ? "none" : "flex";
+          if (!isVisible) {
+            updateStatusBar("AR Mode Active - Follow on-screen directions");
+          } else {
+            updateStatusBar("Map Mode - Select destination for navigation");
+          }
+        };
+        function updateInfoPanel(message) {
+          document.getElementById(
+            "infoPanel"
+          ).innerHTML = `<strong>PathVisioN:</strong><br>${message}`;
+        }
+        function updateStatusBar(message) {
+          document.getElementById("statusBar").textContent = message;
+        }
+        map.on("load", () => {
+          Object.entries(pois).forEach(([key, coords]) => {
+            new mapboxgl.Marker({ color: "#28a745" })
+              .setLngLat(coords)
+              .setPopup(
+                new mapboxgl.Popup().setHTML(
+                  `<strong>${key.replace("_", " ").toUpperCase()}</strong>`
+                )
+              )
+              .addTo(map);
+          });
+        });
+      }
+      if (document.getElementById("arApp").style.display !== "none") {
+        initARApp();
+      } else {
+        const observer = new MutationObserver(function () {
+          if (document.getElementById("arApp").style.display !== "none") {
+            initARApp();
+            observer.disconnect();
+          }
+        });
+        observer.observe(document.getElementById("arApp"), {
+          attributes: true,
+          attributeFilter: ["style"],
+        });
+      }
+
+      // --- GOOGLE MAP MODAL LOGIC ---
+      function openGoogleMapModal() {
+        document.getElementById("googleMapModal").style.display = "flex";
+      }
+      function closeGoogleMapModal() {
+        document.getElementById("googleMapModal").style.display = "none";
+      }
+    </script>
+  </body>
+</html>

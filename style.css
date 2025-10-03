@@ -1,0 +1,124 @@
+/* Dynamic Login Page CSS */
+.login-modal-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 2000;
+  background: rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.3s;
+}
+.login-card {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(60, 64, 67, 0.18);
+  padding: 36px 32px;
+  max-width: 360px;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  animation: fadeInUp 0.6s cubic-bezier(0.23, 1.01, 0.32, 1) both;
+}
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.login-card h1 {
+  margin: 0 0 10px 0;
+  font-size: 24px;
+  color: #4285f4;
+  text-align: center;
+  font-weight: 600;
+  letter-spacing: -1px;
+}
+.login-field {
+  position: relative;
+  margin-bottom: 18px;
+}
+.login-field input {
+  width: 100%;
+  padding: 14px 12px 14px 12px;
+  border-radius: 8px;
+  border: 1.5px solid #dadce0;
+  font-size: 16px;
+  background: #f8f9fa;
+  outline: none;
+  transition: border 0.2s;
+}
+.login-field input:focus {
+  border-color: #4285f4;
+  background: #fff;
+}
+.login-field label {
+  position: absolute;
+  left: 14px;
+  top: 14px;
+  font-size: 15px;
+  color: #757575;
+  background: transparent;
+  pointer-events: none;
+  transition: all 0.18s;
+}
+.login-field input:focus + label,
+.login-field input:not(:placeholder-shown) + label {
+  top: -10px;
+  left: 8px;
+  font-size: 12px;
+  color: #4285f4;
+  background: #fff;
+  padding: 0 4px;
+}
+.btn {
+  background: #4285f4;
+  color: #fff;
+  border: none;
+  padding: 12px 0;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 17px;
+  cursor: pointer;
+  margin-top: 8px;
+  box-shadow: 0 2px 8px rgba(60, 64, 67, 0.08);
+  transition: background 0.2s;
+}
+.btn:hover {
+  background: #3367d6;
+}
+.error-msg {
+  color: #ea4335;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 0;
+  animation: shake 0.3s;
+}
+@keyframes shake {
+  0% {
+    transform: translateX(0);
+  }
+  25% {
+    transform: translateX(-6px);
+  }
+  50% {
+    transform: translateX(6px);
+  }
+  75% {
+    transform: translateX(-6px);
+  }
+  100% {
+    transform: translateX(0);
+  }
+}
+.small {
+  font-size: 13px;
+  color: #5f6368;
+  text-align: center;
+  margin-top: 8px;
+}
